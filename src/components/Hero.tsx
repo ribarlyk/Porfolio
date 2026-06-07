@@ -1,7 +1,6 @@
 "use client";
 
 import { Icon } from "./ui/Icon";
-import { Counter } from "./ui/Counter";
 import { Reveal } from "./ui/Reveal";
 import { Magnetic } from "./ui/Magnetic";
 import { Typewriter } from "./ui/Typewriter";
@@ -25,52 +24,13 @@ function HeroCTAs() {
   );
 }
 
-function StatRow() {
-  const stats = useT().stats;
+function HeroPhotoBg() {
+  const p = useT().profile;
   return (
-    <div className="stats">
-      {stats.map((s) => (
-        <div className="stat" key={s.label}>
-          <div className="num">
-            <Counter to={s.value} suffix={s.suffix} />
-          </div>
-          <div className="lbl">{s.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function HeroCodeCard() {
-  const dict = useT();
-  return (
-    <div className="codecard" aria-hidden="true">
-      <div className="bar">
-        <i />
-        <i />
-        <i />
-        <span className="fname">{dict.profile.first.toLowerCase()}.config.ts</span>
-      </div>
-      <div className="body">
-        <div className="ln cc-com">{dict.t.codeComment}</div>
-        <div className="ln">
-          <span className="cc-key">export const</span> engineer = {"{"}
-        </div>
-        <div className="ln">
-          {"  "}role: <span className="cc-str">&quot;{dict.profile.title}&quot;</span>,
-        </div>
-        <div className="ln">
-          {"  "}stack: [<span className="cc-str">&quot;React&quot;</span>, <span className="cc-str">&quot;Next&quot;</span>,{" "}
-          <span className="cc-str">&quot;Vue&quot;</span>, <span className="cc-str">&quot;TS&quot;</span>],
-        </div>
-        <div className="ln">
-          {"  "}focus: <span className="cc-str">&quot;performance&quot;</span>,
-        </div>
-        <div className="ln">
-          {"  "}ship: <span className="cc-fn">()</span>{"⇒"} <span className="cc-key">true</span>,
-        </div>
-        <div className="ln">{"}"}</div>
-      </div>
+    <div className="hero-bg-photo" aria-hidden="true">
+      {/* Static export uses plain <img>; the asset lives in /public. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/assets/pavel.webp" alt={p.name} />
     </div>
   );
 }
@@ -79,9 +39,10 @@ function HeroCodeCard() {
 export function Hero() {
   const p = useT().profile;
   return (
-    <header className="hero heroB" id="top">
+    <header className="hero heroB hero-has-photo" id="top">
+      <HeroPhotoBg />
       <div className="wrap heroB-grid">
-        <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+        <div className="hero-copy" style={{ display: "flex", flexDirection: "column", gap: 26 }}>
           <Reveal delay={40}>
             <p className="hero-greeting">
               <Typewriter text={p.greeting} />
@@ -101,14 +62,6 @@ export function Hero() {
             <HeroCTAs />
           </Reveal>
         </div>
-        <Reveal delay={140} className="heroB-visual">
-          <HeroCodeCard />
-        </Reveal>
-      </div>
-      <div className="wrap" style={{ marginTop: "clamp(48px, 7vh, 80px)" }}>
-        <Reveal delay={220} style={{ borderTop: "1px solid var(--border)", paddingTop: 36 }}>
-          <StatRow />
-        </Reveal>
       </div>
     </header>
   );

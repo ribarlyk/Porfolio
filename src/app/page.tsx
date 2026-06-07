@@ -214,7 +214,7 @@ function Footer() {
         </div>
         <div className="footer-bottom">
           <span>{footer.craft}</span>
-          <span>{footer.press}</span>
+          <span className="footer-press">{footer.press}</span>
         </div>
       </div>
     </footer>
