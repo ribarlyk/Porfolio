@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { PrefsProvider } from "@/lib/prefs";
 import { StructuredData } from "@/components/StructuredData";
 import { siteConfig, siteKeywords } from "@/lib/site";
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <PrefsProvider>{children}</PrefsProvider>
+        <Analytics />
       </body>
     </html>
   );
