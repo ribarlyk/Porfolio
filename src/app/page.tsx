@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Hero, TechMarquee } from "@/components/Hero";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Hero } from "@/components/Hero";
 import { Nav } from "@/components/Nav";
-import { About, Skills, Technical } from "@/components/sections/Narrative";
+import { About } from "@/components/sections/Narrative";
 import { Projects } from "@/components/sections/Projects";
 import { CommandMenu, type CmdGroup } from "@/components/ui/CommandMenu";
 import { Icon } from "@/components/ui/Icon";
-import { Reveal } from "@/components/ui/Reveal";
+import { RectStamp } from "@/components/ui/Stamp";
+import { SheetHead } from "@/components/ui/SheetHead";
 import { usePrefs, useT } from "@/lib/prefs";
 import { type ContactErrors, type ContactValues, validateContact } from "@/lib/validation";
 import { siteConfig } from "@/lib/site";
@@ -22,7 +23,19 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
-function Contact() {
+/**
+ * Sheet 4 — the request. The site field shares its value with the offer's
+ * recipient field (a carbon copy); a successful send stamps the sheet.
+ */
+function Contact({
+  site,
+  onSite,
+  carbonPulse,
+}: {
+  site: string;
+  onSite: (value: string) => void;
+  carbonPulse: number;
+}) {
   const dict = useT();
   const [values, setValues] = useState<ContactValues>(initialContactValues);
   const [errors, setErrors] = useState<ContactErrors>({});
@@ -30,11 +43,12 @@ function Contact() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(false);
   const contact = dict.t.contact;
+  const rq = dict.t.pad.request;
 
   const links = [
     { label: contact.linkEmail, value: dict.profile.email, href: `mailto:${dict.profile.email}`, icon: "mail" },
     { label: contact.linkGithub, value: dict.profile.githubHandle, href: dict.profile.github, icon: "github" },
-    { label: contact.linkLinkedin, value: "Pavel Hristov", href: dict.profile.linkedin, icon: "linkedin" },
+    { label: contact.linkLinkedin, value: dict.profile.nameLocal, href: dict.profile.linkedin, icon: "linkedin" },
   ];
 
   function updateField(field: keyof ContactValues, value: string) {
@@ -46,7 +60,11 @@ function Contact() {
     event.preventDefault();
     const nextErrors = validateContact(values, contact);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) {
+      const first = (["name", "email", "message"] as const).find((f) => nextErrors[f]);
+      if (first) document.getElementById(first)?.focus();
+      return;
+    }
 
     setSendError(false);
     setSending(true);
@@ -60,6 +78,7 @@ function Contact() {
           from_name: values.name,
           name: values.name,
           email: values.email,
+          website: site.trim() || "—",
           message: values.message,
         }),
       });
@@ -77,131 +96,166 @@ function Contact() {
   }
 
   return (
-    <section className="section-pad" id="contact">
-      <div className="wrap contact-grid">
-        <div>
-          <Reveal>
-            <div className="eyebrow">
-              <span className="idx">07</span> {dict.t.sec.contactEy}
-            </div>
-            <h2 className="contact-h" style={{ marginTop: 18 }}>
-              {contact.h}
-            </h2>
-            <p className="lede" style={{ marginTop: 18, textAlign: "left" }}>
-              {contact.p}
-            </p>
-          </Reveal>
+    <section className="sheet sheet-canary perf" id="contact" aria-labelledby="contact-title">
+      <div className="wrap">
+        <SheetHead id="contact-title" title={rq.title} sub={rq.sub} marker={rq.ref} dated />
 
-          <div className="contact-links">
-            {links.map((link, index) => (
-              <Reveal key={link.label} delay={index * 50}>
-                <a className="clink" href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
-                  <span className="ci">
-                    <Icon name={link.icon} />
-                  </span>
-                  <span className="cmeta">
-                    <b>{link.label}</b>
-                    <span>{link.value}</span>
-                  </span>
-                  <Icon name="arrowUpRight" style={{ width: 16, height: 16 }} />
-                </a>
-              </Reveal>
-            ))}
+        <form className={`form request ${sent ? "is-sent" : ""}`} onSubmit={onSubmit} noValidate>
+          <div className="cell c-intro">
+            <p className="request-h">{contact.h}</p>
+            <p className="lede">{contact.p}</p>
           </div>
-        </div>
 
-        <Reveal delay={120}>
-          {sent ? (
-            <div className="form form-sent">
-              <span className="ok">
-                <Icon name="check" />
-              </span>
-              <h3>{contact.sentTitle}</h3>
-              <p className="muted">{contact.sentBody(values.name)}</p>
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setValues(initialContactValues);
-                  setErrors({});
-                  setSent(false);
-                  setSendError(false);
-                }}
-              >
-                {contact.sendAnother}
-              </button>
+          <div className={`cell c-name ${errors.name ? "err" : ""}`}>
+            <label className="lbl" htmlFor="name">{contact.name}</label>
+            <input
+              id="name"
+              autoComplete="name"
+              value={values.name}
+              placeholder={contact.namePh}
+              readOnly={sent}
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? "name-err" : undefined}
+              onChange={(event) => updateField("name", event.target.value)}
+            />
+            {errors.name && <span className="msg" id="name-err">{errors.name}</span>}
+          </div>
+
+          <div className={`cell c-email ${errors.email ? "err" : ""}`}>
+            <label className="lbl" htmlFor="email">{contact.email}</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={values.email}
+              placeholder={contact.emailPh}
+              readOnly={sent}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "email-err" : undefined}
+              onChange={(event) => updateField("email", event.target.value)}
+            />
+            {errors.email && <span className="msg" id="email-err">{errors.email}</span>}
+          </div>
+
+          <div className="cell c-site">
+            <label className="lbl" htmlFor="site">{rq.site}</label>
+            <input
+              id="site"
+              type="text"
+              inputMode="url"
+              autoComplete="url"
+              spellCheck={false}
+              value={site}
+              placeholder={dict.t.pad.offer.sitePh}
+              readOnly={sent}
+              onChange={(event) => onSite(event.target.value)}
+              key={carbonPulse}
+              className={carbonPulse > 0 && site ? "carbon" : ""}
+            />
+            {site.trim() && <span className="carbon-note">{rq.carbon}</span>}
+          </div>
+
+          <div className={`cell c-message ${errors.message ? "err" : ""}`}>
+            <label className="lbl" htmlFor="message">{contact.message}</label>
+            <textarea
+              id="message"
+              rows={5}
+              value={values.message}
+              placeholder={contact.messagePh}
+              readOnly={sent}
+              aria-invalid={Boolean(errors.message)}
+              aria-describedby={errors.message ? "message-err" : undefined}
+              onChange={(event) => updateField("message", event.target.value)}
+            />
+            {errors.message && <span className="msg" id="message-err">{errors.message}</span>}
+          </div>
+
+          <div className="cell c-direct">
+            <span className="lbl">{rq.direct}</span>
+            <ul className="direct">
+              {links.map((link) => (
+                <li key={link.label}>
+                  <a href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+                    <Icon name={link.icon} />
+                    <span className="d-label">{link.label}</span>
+                    <span className="d-value">{link.value}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="cell c-submit" aria-live="polite">
+            <div className="mp" aria-hidden="true">
+              <span className="mp-place">{rq.mp}</span>
+              {sent && <RectStamp lines={[rq.received, dict.profile.nameLocal]} className="stamp-received" land />}
             </div>
-          ) : (
-            <form className="form" onSubmit={onSubmit} noValidate>
-              <div className="form-row">
-                <div className={`field ${errors.name ? "err" : ""}`}>
-                  <label htmlFor="name">{contact.name}</label>
-                  <input id="name" value={values.name} placeholder={contact.namePh} onChange={(event) => updateField("name", event.target.value)} />
-                  {errors.name && <span className="msg">{errors.name}</span>}
-                </div>
-                <div className={`field ${errors.email ? "err" : ""}`}>
-                  <label htmlFor="email">{contact.email}</label>
-                  <input
-                    id="email"
-                    type="email"
-                    value={values.email}
-                    placeholder={contact.emailPh}
-                    onChange={(event) => updateField("email", event.target.value)}
-                  />
-                  {errors.email && <span className="msg">{errors.email}</span>}
-                </div>
+            {sent ? (
+              <div className="sent">
+                <p className="entry-lg">{contact.sentTitle}</p>
+                <p className="entry entry-2">{contact.sentBody(values.name)}</p>
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => {
+                    setValues(initialContactValues);
+                    setErrors({});
+                    setSent(false);
+                    setSendError(false);
+                  }}
+                >
+                  {contact.sendAnother}
+                </button>
               </div>
-              <div className={`field ${errors.message ? "err" : ""}`}>
-                <label htmlFor="message">{contact.message}</label>
-                <textarea id="message" value={values.message} placeholder={contact.messagePh} onChange={(event) => updateField("message", event.target.value)} />
-                {errors.message && <span className="msg">{errors.message}</span>}
-              </div>
-              {sendError && (
-                <p className="msg" role="alert">
-                  {contact.errSend}
-                </p>
-              )}
-              <button className="btn btn-primary" type="submit" disabled={sending} aria-busy={sending}>
-                {sending ? contact.sending : contact.send} {!sending && <Icon name="arrow" />}
-              </button>
-            </form>
-          )}
-        </Reveal>
+            ) : (
+              <>
+                <button className="btn" type="submit" disabled={sending} aria-busy={sending}>
+                  {sending ? contact.sending : contact.send} {!sending && <Icon name="arrow" />}
+                </button>
+                {sendError && (
+                  <p className="msg" role="alert">
+                    {contact.errSend}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </form>
       </div>
     </section>
   );
 }
 
+/** The pad's back board: who made it, where to go, how to reach him. */
 function Footer() {
   const dict = useT();
   const footer = dict.t.footer;
   const siteLinks = [
     ["top", dict.t.cmd.home],
-    ["about", dict.t.nav.about],
     ["projects", dict.t.nav.projects],
+    ["about", dict.t.nav.about],
     ["contact", dict.t.nav.contact],
   ];
 
   return (
-    <footer className="footer">
+    <footer className="board">
       <div className="wrap">
-        <div className="footer-top">
+        <div className="board-top">
           <div>
-            <strong>{dict.profile.name}</strong>
-            <p className="muted" style={{ marginTop: 8, maxWidth: 440 }}>
-              {footer.tagline(dict.profile.title, dict.profile.location)}
-            </p>
+            <p className="board-name">{dict.profile.nameLocal}</p>
+            <p className="board-tag">{footer.tagline(dict.profile.title, dict.profile.location)}</p>
           </div>
-          <div className="footer-nav">
-            <div className="footer-col">
-              <span className="ft">{footer.site}</span>
+          <nav className="board-nav" aria-label={footer.site}>
+            <div className="board-col">
+              <span className="board-lbl">{footer.site}</span>
               {siteLinks.map(([id, label]) => (
                 <a key={id} href={`#${id}`}>
                   {label}
                 </a>
               ))}
             </div>
-            <div className="footer-col">
-              <span className="ft">{footer.connect}</span>
+            <div className="board-col">
+              <span className="board-lbl">{footer.connect}</span>
               <a href={`mailto:${dict.profile.email}`}>{dict.profile.email}</a>
               <a href={dict.profile.github} target="_blank" rel="noreferrer">
                 GitHub
@@ -210,11 +264,13 @@ function Footer() {
                 LinkedIn
               </a>
             </div>
-          </div>
+          </nav>
         </div>
-        <div className="footer-bottom">
-          <span>{footer.craft}</span>
-          <span className="footer-press">{footer.press}</span>
+        <div className="board-bottom">
+          <span>
+            {dict.profile.domain} · {footer.craft}
+          </span>
+          <span className="board-press">{footer.press}</span>
         </div>
       </div>
     </footer>
@@ -224,10 +280,25 @@ function Footer() {
 export default function Home() {
   const { theme, toggleTheme, toggleLang, dict } = usePrefs();
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [site, setSite] = useState("");
+  const [carbonPulse, setCarbonPulse] = useState(0);
+  const pulseTimer = useRef<number | undefined>(undefined);
 
   const copyEmail = useCallback(() => {
     void navigator.clipboard?.writeText(dict.profile.email);
   }, [dict.profile.email]);
+
+  // The offer's primary action: carry the site over and open the request.
+  const inquire = useCallback(() => {
+    setCarbonPulse((n) => n + 1);
+    scrollToSection("contact");
+    window.clearTimeout(pulseTimer.current);
+    pulseTimer.current = window.setTimeout(() => {
+      document.getElementById("name")?.focus({ preventScroll: true });
+    }, 650);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(pulseTimer.current), []);
 
   const groups = useMemo<CmdGroup[]>(
     () => [
@@ -235,8 +306,8 @@ export default function Home() {
         label: dict.t.cmd.navigate,
         items: [
           { label: dict.t.cmd.home, icon: "home", run: () => scrollToSection("top"), kw: "top hero" },
-          { label: dict.t.cmd.about, icon: "user", run: () => scrollToSection("about") },
           { label: dict.t.cmd.projects, icon: "folder", run: () => scrollToSection("projects") },
+          { label: dict.t.cmd.about, icon: "user", run: () => scrollToSection("about") },
           { label: dict.t.cmd.contact, icon: "mail", run: () => scrollToSection("contact") },
         ],
       },
@@ -272,18 +343,16 @@ export default function Home() {
 
   return (
     <>
-      <div className="bg-field" />
-      <div className="bg-grid" />
+      <a className="skip" href="#main">
+        {dict.t.nav.skip}
+      </a>
       <Nav openCmd={() => setCmdOpen(true)} />
       <CommandMenu open={cmdOpen} setOpen={setCmdOpen} groups={groups} />
-      <main className="shell">
-        <Hero />
-        <TechMarquee />
-        <About />
-        <Skills />
+      <main className="pad" id="main">
+        <Hero site={site} onSite={setSite} onInquire={inquire} />
         <Projects />
-        <Technical />
-        <Contact />
+        <About />
+        <Contact site={site} onSite={setSite} carbonPulse={carbonPulse} />
       </main>
       <Footer />
     </>

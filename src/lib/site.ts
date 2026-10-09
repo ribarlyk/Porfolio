@@ -12,7 +12,7 @@ export const siteConfig = {
   jobTitleEn: "Experienced Frontend Engineer",
   description:
     "Pavel Hristov (Павел Христов) — опитен Frontend инженер и Full-Stack продуктов разработчик. Изграждам бързи, мащабируеми уеб приложения с React, Next.js, Vue и Nuxt.",
-  tagline: "Изграждам бързи, мащабируеми уеб продукти, които носят реално бизнес въздействие.",
+  tagline: "Правя съществуващия ви сайт по-бърз и по-добър — без да започвате отначало.",
   locale: "bg_BG",
   altLocale: "en_US",
   email: "hristov.pavel@zohomail.eu",
@@ -28,7 +28,7 @@ export const siteConfig = {
 } as const;
 
 /** Section anchors that make up the single-page site (for the sitemap). */
-export const siteSections = ["about", "skills", "projects", "excellence", "contact"] as const;
+export const siteSections = ["projects", "about", "contact"] as const;
 
 export const siteKeywords = [
   "Pavel Hristov",
