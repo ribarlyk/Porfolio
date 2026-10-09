@@ -1,98 +1,145 @@
 "use client";
 
 import { Icon } from "./ui/Icon";
-import { Reveal } from "./ui/Reveal";
-import { Magnetic } from "./ui/Magnetic";
-import { Typewriter } from "./ui/Typewriter";
-import { useT } from "@/lib/prefs";
+import { Stamp } from "./ui/Stamp";
+import { Paperclip } from "./ui/Paperclip";
+import { SheetHead } from "./ui/SheetHead";
+import { usePrefs } from "@/lib/prefs";
 
-function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
+/**
+ * Sheet 1 — the offer. Addressed to the visitor's business: the subject is
+ * the headline, the recipient cell holds the live "your site" field (it
+ * carbon-copies into the request form) and the primary action.
+ */
+export function Hero({
+  site,
+  onSite,
+  onInquire,
+}: {
+  site: string;
+  onSite: (value: string) => void;
+  onInquire: () => void;
+}) {
+  const { dict, theme } = usePrefs();
+  const p = dict.profile;
+  const pad = dict.t.pad;
+  const o = pad.offer;
 
-function HeroCTAs() {
-  const t = useT().t;
   return (
-    <div className="hero-cta">
-      <Magnetic className="btn btn-primary" strength={0.35} onClick={() => scrollTo("projects")} data-testid="cta-projects">
-        {t.cta.view} <Icon name="arrow" style={{ width: 16, height: 16 }} />
-      </Magnetic>
-      <Magnetic className="btn btn-ghost" strength={0.3} onClick={() => scrollTo("contact")} data-testid="cta-contact">
-        {t.cta.connect}
-      </Magnetic>
-    </div>
-  );
-}
+    <header className="sheet sheet-original" id="top">
+      <div className="wrap">
+        <SheetHead
+          title={o.title}
+          sub={o.sub}
+          serial="0000000001"
+          dated
+          plainTitle
+          marker={theme === "dark" ? pad.copy : pad.original}
+        />
 
-function HeroPhotoBg() {
-  const p = useT().profile;
-  return (
-    <div className="hero-bg-photo" aria-hidden="true">
-      {/* Static export uses plain <img>; the asset lives in /public. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/assets/pavel.webp" alt={p.name} />
-    </div>
-  );
-}
+        <div className="form offer">
+          <div className="cell c-subject">
+            <span className="lbl">{o.subject}</span>
+            <h1 className="headline">{p.headline.join(" ")}</h1>
+          </div>
 
-/** Production hero — the split layout with a code card on the right. */
-export function Hero() {
-  const p = useT().profile;
-  return (
-    <header className="hero heroB hero-has-photo" id="top">
-      <HeroPhotoBg />
-      <div className="wrap heroB-grid">
-        <div className="hero-copy" style={{ display: "flex", flexDirection: "column", gap: 26 }}>
-          <Reveal delay={40}>
-            <p className="hero-greeting">
-              <Typewriter text={p.greeting} />
-            </p>
-          </Reveal>
-          <Reveal delay={60} as="h1">
-            {p.headline.map((line, i) => (
-              <div key={i} className={i === p.headline.length - 1 ? "grad-text" : ""}>
-                {line}
+          <div className="cell c-recipient">
+            <span className="lbl">{o.recipient}</span>
+            <p className="entry-lg">{o.recipientName}</p>
+            <label className="line-field" htmlFor="offer-site">
+              <span className="lbl lbl-sm">{o.site}</span>
+              <input
+                id="offer-site"
+                type="text"
+                inputMode="url"
+                autoComplete="url"
+                spellCheck={false}
+                value={site}
+                placeholder={o.sitePh}
+                onChange={(e) => onSite(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onInquire();
+                  }
+                }}
+              />
+            </label>
+            <p className="note">{o.carbon}</p>
+            <div className="actions">
+              <button type="button" className="btn" onClick={onInquire} data-testid="cta-contact">
+                {o.cta} <Icon name="arrow" />
+              </button>
+              <a className="link" href="#projects" data-testid="cta-projects">
+                {o.seeCase}
+              </a>
+            </div>
+          </div>
+
+          <div className="cell c-supplier">
+            <span className="lbl">{o.supplier}</span>
+            <div className="supplier">
+              <figure className="photo">
+                <Paperclip />
+                {/* Static export uses plain <img>; the asset lives in /public. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/assets/pavel.webp" alt={p.nameLocal} width={842} height={1264} />
+                <Stamp ring={pad.stampRing} center={p.monogram} className="stamp-photo" land />
+              </figure>
+              <div className="supplier-data">
+                <p className="entry-lg">{p.nameLocal}</p>
+                <p className="entry">{p.title}</p>
+                <p className="entry entry-2">
+                  {p.location} ·{" "}
+                  <a href={`mailto:${p.email}`} className="ink-link">
+                    {p.email}
+                  </a>
+                </p>
+                <p className="lede">{p.lede}</p>
               </div>
-            ))}
-          </Reveal>
-          <Reveal delay={120}>
-            <p className="lede">{p.lede}</p>
-          </Reveal>
-          <Reveal delay={180}>
-            <HeroCTAs />
-          </Reveal>
+            </div>
+          </div>
+
+          <div className="cell c-items">
+            <table className="items">
+              <thead>
+                <tr>
+                  <th scope="col" className="lbl">{o.colNo}</th>
+                  <th scope="col" className="lbl">{o.colService}</th>
+                  <th scope="col" className="lbl">{o.colGain}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {o.items.map((it, i) => (
+                  <tr key={it.s}>
+                    <td className="n">{i + 1}</td>
+                    <td className="s">{it.s}</td>
+                    <td className="g">{it.g}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="cell c-words">
+            <span className="lbl">{o.inWords}:</span>
+            <p className="words">{o.inWordsText}</p>
+          </div>
+
+          <div className="cell c-issued">
+            <span className="lbl">{o.issued}</span>
+            <p className="sign">{p.nameLocal}</p>
+          </div>
+
+          <div className="cell c-accepted">
+            <span className="lbl">{o.accepted}</span>
+            <a className="sign sign-blank" href="#contact" onClick={(e) => { e.preventDefault(); onInquire(); }}>
+              <span>{o.acceptedCta}</span>
+              <Icon name="arrow" />
+            </a>
+          </div>
         </div>
       </div>
     </header>
-  );
-}
-
-export function TechMarquee() {
-  const dict = useT();
-  return (
-    <div className="wrap" style={{ paddingTop: 8, paddingBottom: 8 }}>
-      <Reveal>
-        <div
-          className="mono"
-          style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-4)", marginBottom: 18, textAlign: "center" }}
-        >
-          {dict.t.marqueeLabel}
-        </div>
-        <div className="marquee">
-          <div className="marquee-track">
-            <div className="mi">
-              {dict.marquee.map((tech) => (
-                <span key={tech}>{tech}</span>
-              ))}
-            </div>
-            <div className="mi" aria-hidden="true">
-              {dict.marquee.map((tech) => (
-                <span key={tech + "2"}>{tech}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Reveal>
-    </div>
   );
 }

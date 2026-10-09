@@ -1,11 +1,15 @@
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/site";
+import { ENTRY, PRINT, og, ogFonts } from "./_og/fonts";
 
 export const alt = siteConfig.title;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+const label = { fontFamily: PRINT, fontSize: 19, letterSpacing: 2, color: og.print, textTransform: "uppercase" as const };
+
+/** The shared-link face: the offer sheet, its subject line and the stamp. */
+export default async function OpengraphImage() {
   return new ImageResponse(
     (
       <div
@@ -14,57 +18,71 @@ export default function OpengraphImage() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          padding: 80,
-          background:
-            "radial-gradient(900px 600px at 12% -10%, rgba(40,52,138,0.55), transparent 60%), radial-gradient(700px 500px at 100% 110%, rgba(90,108,224,0.35), transparent 55%), #08090b",
-          color: "#ededee",
-          fontFamily: "sans-serif",
+          padding: "40px 56px 48px",
+          background: og.sheet,
+          borderTop: `8px solid ${og.print}`,
+          fontFamily: ENTRY,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          <div
-            style={{
-              width: 84,
-              height: 84,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 44,
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: "-0.04em",
-              background: "linear-gradient(150deg, #1c2150, #28348A)",
-              borderRadius: 20,
-            }}
-          >
-            PH
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 34, fontWeight: 600, letterSpacing: "-0.02em" }}>{siteConfig.name}</div>
-            <div style={{ fontSize: 24, color: "#8e9bf2" }}>{siteConfig.jobTitle}</div>
-          </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18 }}>
+          <div style={{ fontFamily: PRINT, fontSize: 54, letterSpacing: 9, color: og.print, lineHeight: 1 }}>ОФЕРТА</div>
+          <div style={{ fontFamily: PRINT, fontSize: 40, letterSpacing: 5, color: og.serial, lineHeight: 1 }}>№ 0000000001</div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ fontSize: 66, fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05, maxWidth: 960 }}>
-            {siteConfig.tagline}
+        <div style={{ display: "flex", flexDirection: "column", flex: 1, border: `3px solid ${og.print}` }}>
+          <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "18px 26px 22px", borderBottom: `1.5px solid ${og.line}` }}>
+            <div style={label}>Предмет</div>
+            <div style={{ marginTop: 14, fontSize: 62, lineHeight: 1.05, color: og.ink, letterSpacing: -1.6, maxWidth: 900 }}>
+              {siteConfig.tagline}
+            </div>
           </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 26, color: "#82858e" }}>
-          <span>React</span>
-          <span>·</span>
-          <span>Next.js</span>
-          <span>·</span>
-          <span>Vue</span>
-          <span>·</span>
-          <span>Nuxt</span>
-          <span>·</span>
-          <span>TypeScript</span>
+          <div style={{ display: "flex", height: 150 }}>
+            <div style={{ display: "flex", flexDirection: "column", flex: 7, padding: "16px 26px", borderRight: `1.5px solid ${og.line}` }}>
+              <div style={label}>Доставчик</div>
+              <div style={{ marginTop: 10, fontSize: 36, color: og.ink }}>{siteConfig.nameBg}</div>
+              <div style={{ fontSize: 24, color: og.ink, opacity: 0.85 }}>{`${siteConfig.jobTitle} · София`}</div>
+            </div>
+            <div style={{ display: "flex", flex: 5, padding: "16px 26px", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={label}>Сайт</div>
+                <div style={{ marginTop: 10, fontSize: 30, color: og.ink }}>pavelhristov.dev</div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 124,
+                  height: 124,
+                  marginTop: -6,
+                  borderRadius: 62,
+                  border: `5px solid ${og.stamp}`,
+                  transform: "rotate(-12deg)",
+                  opacity: 0.88,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 98,
+                    height: 98,
+                    borderRadius: 49,
+                    border: `2px solid ${og.stamp}`,
+                    fontFamily: PRINT,
+                    fontSize: 46,
+                    color: og.stamp,
+                  }}
+                >
+                  PH
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts: await ogFonts() }
   );
 }

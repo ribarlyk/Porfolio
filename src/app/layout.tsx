@@ -3,7 +3,13 @@ import { Analytics } from "@vercel/analytics/next";
 import { PrefsProvider } from "@/lib/prefs";
 import { StructuredData } from "@/components/StructuredData";
 import { siteConfig, siteKeywords } from "@/lib/site";
+import { Sofia_Sans, Sofia_Sans_Extra_Condensed } from "next/font/google";
 import "./globals.css";
+
+// Sofia Sans (Lettersoup, Sofia) carries Bulgarian Cyrillic forms. The plain
+// width writes the entries; Extra Condensed is the pre-printed form type.
+const entryFont = Sofia_Sans({ subsets: ["latin", "cyrillic"], variable: "--font-entry", display: "swap" });
+const printFont = Sofia_Sans_Extra_Condensed({ subsets: ["latin", "cyrillic"], variable: "--font-print", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -54,7 +60,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08090b",
+  themeColor: "#f4f6f4",
   width: "device-width",
   initialScale: 1,
 };
@@ -64,7 +70,7 @@ export const viewport: Viewport = {
 // visitor is detectably outside Bulgaria (a known, non-Sofia timezone and no
 // Bulgarian browser locale). An explicit stored choice always wins.
 const noFlash = `(function(){try{
-  var t=localStorage.getItem('theme')||'dark';
+  var t=localStorage.getItem('theme')||'light';
   document.documentElement.dataset.theme=t;
   var l=localStorage.getItem('lang');
   if(!l){
@@ -74,11 +80,11 @@ const noFlash = `(function(){try{
     if(langs.indexOf('bg')===-1&&tz&&tz!=='europe/sofia')l='en';
   }
   document.documentElement.lang=l;
-}catch(e){document.documentElement.dataset.theme='dark';}})();`;
+}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bg" data-theme="dark" suppressHydrationWarning>
+    <html lang="bg" data-theme="light" className={`${entryFont.variable} ${printFont.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlash }} />
         <StructuredData />

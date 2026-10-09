@@ -66,13 +66,13 @@ export function PrefsProvider({ children }: { children: React.ReactNode }) {
   // Defaults match the SSR markup; the pre-hydration script in layout.tsx
   // sets <html data-theme/lang> first, so there's no flash.
   const [lang, setLangState] = useState<Lang>("bg");
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   // Sync from storage / DOM after mount. Language is detected (storage wins,
   // then browser locale / timezone) so Bulgarian visitors default to BG.
   useEffect(() => {
     setLangState(detectInitialLang());
-    setThemeState(readStored<Theme>("theme", "dark"));
+    setThemeState(readStored<Theme>("theme", "light"));
   }, []);
 
   const setLang = useCallback((l: Lang) => {

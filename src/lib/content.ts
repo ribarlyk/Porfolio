@@ -23,10 +23,30 @@ export interface Project {
 }
 export interface TechStat { n: number; suf: string; l: string; d: string; meter: number; }
 export interface Post { date: string; read: string; tag: string; title: string; excerpt: string; }
+/** One line of the offer sheet: the service, and what the client gains. */
+export interface OfferItem { s: string; g: string; }
+
+/** Labels pre-printed on the pad's sheets (offer, record, supplier, request). */
+export interface PadText {
+  date: string; place: string; original: string; copy: string; dark: string; lang: string;
+  offer: {
+    title: string; sub: string; subject: string; supplier: string; recipient: string; recipientName: string;
+    site: string; sitePh: string; carbon: string; cta: string; seeCase: string;
+    colNo: string; colService: string; colGain: string; items: OfferItem[];
+    inWords: string; inWordsText: string; issued: string; accepted: string; acceptedCta: string;
+  };
+  protocol: {
+    title: string; sub: string; archive: string; client: string; object: string; attachment: string;
+    problem: string; solution: string; materials: string; status: string; open: string;
+  };
+  supplier: { title: string; sub: string; notes: string; terms: string; sign: string; colArea: string; colTools: string };
+  request: { title: string; sub: string; ref: string; site: string; carbon: string; direct: string; received: string; mp: string };
+  stampRing: string;
+}
 
 export interface Dict {
   profile: {
-    name: string; first: string; monogram: string;
+    name: string; nameLocal: string; first: string; monogram: string;
     title: string; title2: string; location: string; status: string;
     github: string; githubHandle: string; linkedin: string; x: string;
     domain: string; email: string;
@@ -64,6 +84,7 @@ export interface Dict {
       linkEmail: string; linkGithub: string; linkLinkedin: string; linkX: string;
     };
     footer: { site: string; connect: string; tagline: (t: string, l: string) => string; press: string; craft: string };
+    pad: PadText;
     cmd: {
       ph: string; esc: string; navigate: string; actions: string;
       home: string; about: string; experience: string; projects: string; writing: string; contact: string;
@@ -84,12 +105,12 @@ const LINKS = {
 
 const EN: Dict = {
   profile: {
-    name: "Pavel Hristov", first: "Pavel", monogram: "PH",
+    name: "Pavel Hristov", nameLocal: "Pavel Hristov", first: "Pavel", monogram: "PH",
     title: "Experienced Frontend Engineer", title2: "Full-Stack Product Developer",
     location: "Sofia, Bulgaria", status: "Available for select work", ...LINKS,
     greeting: "Hello, I\u2019m Pavel",
-    headline: ["Building fast, scalable web", "products that drive real", "business impact."],
-    lede: "Experienced Frontend Engineer with 5+ years building production-ready web applications in React, Next.js, Vue and Nuxt — from crafting design systems and user interfaces to integrating backend services and databases.",
+    headline: ["I make your existing site", "faster and better \u2014", "without starting over."],
+    lede: "5+ years building production web applications in React, Next.js, Vue and Nuxt — from interfaces and design systems to backend services and databases.",
   },
   stats: [
     { value: 5, suffix: "+", label: "Years shipping production" },
@@ -99,7 +120,7 @@ const EN: Dict = {
   ],
   marquee: ["React", "Next.js", "Vue", "Nuxt", "TypeScript", "Node.js", "Tailwind", "GraphQL", "PostgreSQL", "MongoDB", "Docker", "Vercel", "CI/CD", "REST"],
   about: {
-    lead: "I build digital products end-to-end — owning the work from a blank Figma file and an empty database to a fast, accessible interface that thousands of people use every day.",
+    lead: "I build digital products end-to-end — from design and database to a fast, accessible interface in production. That is exactly why I can renew the part your customers see without touching the part that already works.",
     body: [
       "I started my journey in software development at SoftUni, then deepened my skills at IT Talents. Soon after, I joined a team building a SaaS platform for the insurance industry, where I turned what I had learned into real product solutions.",
       "Working on complex business software gave me valuable experience building scalable applications, working across different technologies, and shipping features used every day by real customers. That's where I developed my approach to development — a focus on quality, performance, and the long-term maintainability of the product.",
@@ -169,17 +190,50 @@ const EN: Dict = {
     proj: { problem: "Problem.", solution: "Solution.", viewSource: "View source on GitHub", liveDemo: "Open live demo", desktopView: "Desktop view", mobileView: "Mobile view" },
     writing: { read: "Read article" },
     contact: {
-      h: "Let\u2019s build exceptional digital experiences.",
-      p: "Available for client projects, product collaborations, and freelance builds. Have an idea or a project in mind? Let’s talk.",
+      h: "Tell me about your site.",
+      p: "Add its address and what bothers you — slow loading, a dated look, weak search visibility. I\u2019m available for new projects and reply within 24 hours.",
       name: "Name", email: "Email", message: "Message",
-      namePh: "Jane Doe", emailPh: "jane@company.com", messagePh: "Tell me about your project or idea…",
-      send: "Send message", sending: "Sending…", sentTitle: "Message sent",
-      sentBody: (n: string) => `Thank you, ${n} — I\u2019ll get back to you within 24 hours.`, sendAnother: "Send another",
+      namePh: "Jane Doe", emailPh: "jane@company.com", messagePh: "What bothers you about the site — speed, looks, orders…",
+      send: "Send inquiry", sending: "Sending…", sentTitle: "Inquiry sent",
+      sentBody: (n: string) => `Thank you, ${n} — I\u2019ll get back to you within 24 hours.`, sendAnother: "Send another inquiry",
       errReq: "Required", errEmail: "Enter a valid email", errMsg: "A little more detail, please",
       errSend: "Something went wrong. Please try again or email me directly.",
       linkEmail: "Email", linkGithub: "GitHub", linkLinkedin: "LinkedIn", linkX: "X",
     },
     footer: { site: "Site", connect: "Connect", tagline: (t: string, l: string) => `${t} building fast, scalable web products from ${l}.`, press: "Press ⌘K", craft: "Built with care" },
+    pad: {
+      date: "Date", place: "Sofia, BG", original: "Original", copy: "Carbon copy", dark: "Dark", lang: "Language",
+      offer: {
+        title: "Offer", sub: "for renewing a website or online store", subject: "Subject",
+        supplier: "Supplier", recipient: "Recipient", recipientName: "Your business",
+        site: "Your site’s address", sitePh: "your-store.com", carbon: "Copies itself into the request below.",
+        cta: "Send an inquiry", seeCase: "See a real project",
+        colNo: "No.", colService: "Service", colGain: "What you gain",
+        items: [
+          { s: "A new frontend on top of your existing backend", g: "You keep your system, your data and the way you work." },
+          { s: "Load speed", g: "Faster pages on desktop and on mobile." },
+          { s: "Modern design and user experience", g: "A clearer path from product to order." },
+          { s: "SEO optimization", g: "Better visibility in search engines." },
+          { s: "Payments and checkout", g: "A smoother checkout — for example with Revolut." },
+        ],
+        inWords: "In words", inWordsText: "a faster, more modern site, on the system you already have.",
+        issued: "Issued by", accepted: "Accepted by", acceptedCta: "Fill in the request",
+      },
+      protocol: {
+        title: "Handover record", sub: "for delivered work", archive: "Archive copy",
+        client: "Client", object: "Project", attachment: "Attachment 1 · view",
+        problem: "Problem", solution: "Solution", materials: "Materials used", status: "Status", open: "Open the live site",
+      },
+      supplier: {
+        title: "Supplier", sub: "details and terms", notes: "Notes",
+        terms: "Terms of work", sign: "Signature", colArea: "Area", colTools: "Tools",
+      },
+      request: {
+        title: "Request", sub: "for a review and an offer", ref: "Re: offer No. 0000000001", site: "Website",
+        carbon: "Carried over from the offer", direct: "Direct contact", received: "Received", mp: "Stamp",
+      },
+      stampRing: "PAVEL HRISTOV • FRONTEND ENGINEER • SOFIA •",
+    },
     cmd: {
       ph: "Jump to a section or run a command…", esc: "ESC", navigate: "Navigate", actions: "Actions",
       home: "Home", about: "About", experience: "Experience", projects: "Projects", writing: "Writing", contact: "Contact",
@@ -192,12 +246,12 @@ const EN: Dict = {
 
 const BG: Dict = {
   profile: {
-    name: "Pavel Hristov", first: "Павел", monogram: "PH",
+    name: "Pavel Hristov", nameLocal: "Павел Христов", first: "Павел", monogram: "PH",
     title: "Опитен Frontend инженер", title2: "Full-Stack продуктов разработчик",
     location: "София, България", status: "Свободен за избрани проекти", ...LINKS,
     greeting: "Здравейте, аз съм Павел",
-    headline: ["Изграждам бързи, мащабируеми", "уеб продукти с реално", "бизнес въздействие."],
-    lede: "Опитен Frontend инженер с над 5 години опит в разработката на production-ready уеб приложения с React, Next.js, Vue и Nuxt – от изграждане на дизайн системи и потребителски интерфейси до интеграция с бекенд услуги и бази данни.",
+    headline: ["Правя съществуващия ви сайт", "по-бърз и по-добър —", "без да започвате отначало."],
+    lede: "Над 5 години опит в production уеб приложения с React, Next.js, Vue и Nuxt — от интерфейси и дизайн системи до бекенд услуги и бази данни.",
   },
   stats: [
     { value: 5, suffix: "+", label: "Години в production" },
@@ -207,7 +261,7 @@ const BG: Dict = {
   ],
   marquee: ["React", "Next.js", "Vue", "Nuxt", "TypeScript", "Node.js", "Tailwind", "GraphQL", "PostgreSQL", "MongoDB", "Docker", "Vercel", "CI/CD", "REST"],
   about: {
-    lead: "Изграждам дигитални продукти от край до край — поемам работата от празен Figma файл и празна база данни до бърз, достъпен интерфейс, който хиляди хора използват всеки ден.",
+    lead: "Изграждам дигитални продукти от край до край — от дизайна и базата данни до бърз, достъпен интерфейс в реална употреба. Затова мога да обновя частта, която клиентите ви виждат, без да пипам тази, която вече работи.",
     body: [
       "Започнах своя път в софтуерната разработка със SoftUni, а по-късно надградих знанията си в IT Talents. Скоро след това се присъединих към екип, разработващ SaaS платформа за застрахователната индустрия, където превърнах наученото в реални продуктови решения.",
       "Работата по сложен бизнес софтуер ми даде ценен опит в изграждането на мащабируеми приложения, работа с различни технологии и създаване на функционалности, които ежедневно се използват от реални клиенти. Именно там развих подхода си към разработката – фокус върху качеството, производителността и дългосрочната поддръжка на продукта.",
@@ -246,7 +300,7 @@ const BG: Dict = {
     { cats: ["Онлайн търговия"], name: "Omekotitel.bg", tag: "Онлайн търговия", shot: "онлайн магазин", url: "https://omekotitel.bg", image: "/projects/omekotitel-desk.webp", imageMobile: "/projects/omekotitel-mob.webp",
       problem: "Клиентът имаше съществуващ онлайн магазин на Magento, но frontend-ът беше значително забавен, с остарял дизайн и влошено потребителско изживяване, което влияеше негативно на конверсиите и SEO представянето.",
       solution: "Оптимизирахме front-end слоя на магазина, като подобрихме значително скоростта на зареждане, UX и визуалната структура, без да променяме стабилния Magento backend. Извършихме SEO оптимизации за по-добра видимост в търсачките и интегрирахме плащания чрез Revolut за по-гладък checkout процес. Резултатът е по-бърз, по-модерен и по-конвертиращ онлайн магазин при запазена основна инфраструктура.",
-      impact: [{ v: "Live", l: "В production" }, { v: "Бърз", l: "Оптимизиран UX" }], stack: ["Next.js", "React", "TypeScript", "Tailwind", "Magento", "Vercel"] },
+      impact: [{ v: "Внедрен", l: "В експлоатация" }, { v: "Бърз", l: "Оптимизиран UX" }], stack: ["Next.js", "React", "TypeScript", "Tailwind", "Magento", "Vercel"] },
   ],
   technical: [
     { n: 99, suf: "", l: "Производителност", d: "Lighthouse производителност на доставени продукти", meter: 99 },
@@ -277,17 +331,50 @@ const BG: Dict = {
     proj: { problem: "Проблем.", solution: "Решение.", viewSource: "Виж кода в GitHub", liveDemo: "Отвори демо", desktopView: "Десктоп изглед", mobileView: "Мобилен изглед" },
     writing: { read: "Прочети статията" },
     contact: {
-      h: "Нека изградим изключителни дигитални преживявания.",
-      p: "Свободен съм за клиентски проекти, продуктови сътрудничества и freelance разработка. Имате идея или проект? Нека го обсъдим.",
+      h: "Разкажете ми за сайта си.",
+      p: "Напишете адреса му и какво ви притеснява — бавно зареждане, остарял вид, слаба видимост в търсачките. Свободен съм за нови проекти и отговарям до 24 часа.",
       name: "Име", email: "Имейл", message: "Съобщение",
-      namePh: "Иван Иванов", emailPh: "ivan@company.com", messagePh: "Разкажете ми за вашия проект или идея…",
-      send: "Изпрати съобщение", sending: "Изпращане…", sentTitle: "Съобщението е изпратено",
-      sentBody: (n: string) => `Благодаря, ${n} — ще се свържа с Вас до 24 часа.`, sendAnother: "Изпрати друго",
+      namePh: "Иван Иванов", emailPh: "ivan@company.com", messagePh: "Какво ви притеснява в сайта — бавно зареждане, вид, поръчки…",
+      send: "Изпратете запитване", sending: "Изпращане…", sentTitle: "Запитването е изпратено",
+      sentBody: (n: string) => `Благодаря, ${n} — ще се свържа с Вас до 24 часа.`, sendAnother: "Изпратете друго запитване",
       errReq: "Задължително", errEmail: "Въведете валиден имейл", errMsg: "Малко повече детайли, моля",
       errSend: "Нещо се обърка. Опитайте отново или ми пишете директно на имейл.",
       linkEmail: "Имейл", linkGithub: "GitHub", linkLinkedin: "LinkedIn", linkX: "X",
     },
     footer: { site: "Сайт", connect: "Връзки", tagline: (t: string, l: string) => `${t}, изграждащ бързи, мащабируеми уеб продукти от ${l}.`, press: "Натисни ⌘K", craft: "Изградено с грижа" },
+    pad: {
+      date: "Дата", place: "гр. София", original: "Оригинал", copy: "Копие", dark: "Тъмен", lang: "Език",
+      offer: {
+        title: "Оферта", sub: "за обновяване на сайт или онлайн магазин", subject: "Предмет",
+        supplier: "Доставчик", recipient: "Получател", recipientName: "Вашият бизнес",
+        site: "Адрес на сайта ви", sitePh: "вашият-магазин.bg", carbon: "Копира се автоматично в заявката по-долу.",
+        cta: "Изпратете запитване", seeCase: "Вижте реален проект",
+        colNo: "№", colService: "Услуга", colGain: "Какво печелите",
+        items: [
+          { s: "Нов frontend върху съществуващия ви бекенд", g: "Запазвате системата, данните и начина си на работа." },
+          { s: "Скорост на зареждане", g: "По-бързи страници на компютър и на телефон." },
+          { s: "Модерен дизайн и потребителско изживяване", g: "По-ясен път от продукта до поръчката." },
+          { s: "SEO оптимизация", g: "По-добра видимост в търсачките." },
+          { s: "Плащания и checkout", g: "По-гладко плащане — например с Revolut." },
+        ],
+        inWords: "Словом", inWordsText: "по-бърз и по-модерен сайт, на системата, която вече имате.",
+        issued: "Съставил", accepted: "Приел", acceptedCta: "Попълнете заявката",
+      },
+      protocol: {
+        title: "Протокол", sub: "за предадена работа", archive: "Копие за архива",
+        client: "Възложител", object: "Обект", attachment: "Приложение 1 · изглед",
+        problem: "Проблем", solution: "Решение", materials: "Вложени материали", status: "Състояние", open: "Отвори сайта",
+      },
+      supplier: {
+        title: "Доставчик", sub: "данни и условия", notes: "Бележки",
+        terms: "Условия на работа", sign: "Подпис", colArea: "Област", colTools: "Инструменти",
+      },
+      request: {
+        title: "Заявка", sub: "за преглед и оферта", ref: "Към оферта № 0000000001", site: "Сайт",
+        carbon: "Пренесено от офертата", direct: "Директна връзка", received: "Получено", mp: "М.П.",
+      },
+      stampRing: "ПАВЕЛ ХРИСТОВ • FRONTEND ИНЖЕНЕР • СОФИЯ •",
+    },
     cmd: {
       ph: "Отиди до секция или изпълни команда…", esc: "ESC", navigate: "Навигация", actions: "Действия",
       home: "Начало", about: "За мен", experience: "Опит", projects: "Проекти", writing: "Статии", contact: "Контакт",
